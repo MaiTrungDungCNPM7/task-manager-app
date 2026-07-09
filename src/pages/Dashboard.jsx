@@ -100,7 +100,7 @@ export default function Dashboard() {
     });
   };
 
-  // Hàm bổ trợ chia nhóm task vào 3 cột từ danh sách đã qua bộ lộ
+  // Hàm bổ trợ chia nhóm task vào 3 cột từ danh sách đã qua bộ lọc
   const getTasksByColumn = (columnType) => {
     const filtered = getFilteredTasks();
     return filtered.filter(task => {
