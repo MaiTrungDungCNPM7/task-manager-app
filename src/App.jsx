@@ -20,7 +20,7 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link to="/tasks" className={`px-4 py-2 rounded-xl text-sm font-medium transition ${isActive('/')}`}>
+            <Link to="/tasks" className={`px-4 py-2 rounded-xl text-sm font-medium transition ${isActive('/tasks')}`}>
               Dashboard
             </Link>
             <Link to="/about" className={`px-4 py-2 rounded-xl text-sm font-medium transition ${isActive('/about')}`}>

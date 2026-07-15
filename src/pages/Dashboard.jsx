@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { taskService } from '../services/taskService';
 import { Plus, Trash2, CheckCircle2, Clock, ListTodo, Search, Filter, Edit3, Eye } from 'lucide-react';
@@ -52,7 +52,7 @@ export default function Dashboard() {
     }
   };
 
-  const getFilteredTasks = () => {
+  const filteredTasks = useMemo(() => { // useMemo để tránh load lại toàn bộ bảng dữ liệu mỗi lần render
     return tasks.filter(task => {
       // Chuẩn hóa chuỗi trạng thái từ mockAPI về 3 nhóm chính cơ bản
       let normalizedStatus = 'todo';
@@ -63,16 +63,15 @@ export default function Dashboard() {
       const matchesStatus = statusFilter === 'all' || normalizedStatus === statusFilter;
 
       // Điều kiện lọc theo từ khóa tìm kiếm (Search Input)
-      const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) || task.description.toLowerCase().includes(searchQuery.toLowerCase());
-
+      const matchesSearch = (task.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
+                            (task.description?.toLowerCase() || '').includes(searchQuery.toLowerCase()); // dùng nullish coalescing để tránh lỗi nếu null
       return matchesStatus && matchesSearch; // Đảm bảo nếu vừa search input vừa có filter thì vẫn hiển thị thỏa mãn cả hai
     });
-  };
+  }, [tasks, searchQuery, statusFilter]); // Hàm phụ thuộc của useMemo
 
   // Hàm bổ trợ chia nhóm task vào 3 cột từ danh sách đã qua bộ lọc
   const getTasksByColumn = (columnType) => {
-    const filtered = getFilteredTasks();
-    return filtered.filter(task => {
+    return filteredTasks.filter(task => {
       if (columnType === 'todo') return task.status === 'todo' || task.status === 'status 1' || !task.status; // Task không có trạng thái cũng có thể được gom luôn vào cột 1
       if (columnType === 'in-progress') return task.status === 'in-progress' || task.status === 'status 2';
       if (columnType === 'done') return task.status === 'done' || task.status === 'status 3';
