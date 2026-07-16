@@ -1,8 +1,19 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Layers, } from 'lucide-react';
+import { Layers, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 
 export default function App() {
   const location = useLocation();
+
+  // State quản lý Toast
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type });
+    }, 3000); // Tự tắt sau 3 giây
+  };
 
   // Hàm helper kiểm tra xem route nào đang active để đổi màu chữ trên Navbar
   const isActive = (path) => location.pathname === path ? 'text-indigo-600 bg-indigo-50 font-bold' : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50';
@@ -30,10 +41,22 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Dashboard & About */}
+      {/* Truyền hàm showToast qua context của Outlet để các trang con đều dùng được */}
       <main className="max-w-7xl mx-auto p-6 mt-4">
-        <Outlet />
+        <Outlet context={{ showToast }} />
       </main>
+
+      {/* Toast container */}
+      {toast.show && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg border animate-bounce-short bg-white text-gray-800 border-gray-100">
+          {toast.type === 'success' ? (
+            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+          ) : (
+            <AlertCircle className="w-5 h-5 text-red-500" />
+          )}
+          <span className="text-sm font-bold">{toast.message}</span>
+        </div>
+      )}
     </div>
   );
 }

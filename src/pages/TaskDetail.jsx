@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
 import { taskService } from '../services/taskService';
-import { ArrowLeft, Calendar, Tag, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, CheckCircle, Edit3, Trash2 } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
+import NotFound from './NotFound';
 
 export default function TaskDetail() {
-  const { id } = useParams(); // Lấy ':id' từ URL thanh địa chỉ
+  const { id } = useParams();
   const navigate = useNavigate();
+  
+  // Lấy hàm showToast từ App component qua Outlet Context
+  const { showToast } = useOutletContext();
+
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error404, setError404] = useState(false); // State kiểm soát lỗi không tìm thấy task
+  const [isModalOpen, setIsModalOpen] = useState(false); // State quản lý Confirm Modal
 
   useEffect(() => {
     const fetchTaskDetail = async () => {
@@ -16,19 +24,32 @@ export default function TaskDetail() {
         const response = await taskService.getTaskById(id);
         setTask(response.data);
       } catch {
-        alert('Không tìm thấy công việc này hoặc đã có lỗi xảy ra!');
-        navigate('/'); // Đẩy người dùng về trang chủ nếu lỗi
+        setError404(true); // Gắn cờ lỗi nếu server báo lỗi (thường là 404) 
       } finally {
         setLoading(false);
       }
     };
     fetchTaskDetail();
-  }, [id, navigate]);
+  }, [id]);
+
+  const handleDelete = async () => {
+    try {
+      await taskService.deleteTask(id);
+      setIsModalOpen(false);
+      showToast('Xóa công việc thành công!'); // Bắn Toast báo thành công
+      navigate('/tasks'); // Chuyển trang về Dashboard
+    } catch {
+      showToast('Xóa thất bại, vui lòng thử lại!', 'error');
+    }
+  };
 
   if (loading) return <div className="text-center py-20 font-medium text-gray-500">Đang tải chi tiết công việc...</div>;
-  if (!task) return null;
+  
+  // Nếu task không tồn tại, trả về trang lỗi 404 
+  if (error404 || !task) {
+    return <NotFound message="Mã công việc (Task ID) này không tồn tại trên hệ thống dữ liệu." />;
+  }
 
-  // Định nghĩa màu sắc hiển thị tương ứng trạng thái
   const statusConfig = {
     'todo': { label: 'Cần làm', color: 'bg-blue-100 text-blue-800 border-blue-200' },
     'status 1': { label: 'Cần làm', color: 'bg-blue-100 text-blue-800 border-blue-200' },
@@ -42,10 +63,28 @@ export default function TaskDetail() {
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-2xl border shadow-sm p-6 md:p-8 mt-6">
-      {/* Nút Quay Lại */}
-      <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 font-medium mb-6 transition">
-        <ArrowLeft className="w-4 h-4" /> Quay lại Dashboard
-      </Link>
+      {/* Thanh điều hướng quay lại */}
+      <div className="flex justify-between items-center mb-6">
+        <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 font-medium transition">
+          <ArrowLeft className="w-4 h-4" /> Quay lại Dashboard
+        </Link>
+        
+        {/* Nút Edit và Delete */}
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/tasks/${task.id}/edit`}
+            className="flex items-center gap-1.5 px-3.5 py-2 border border-gray-200 hover:border-indigo-500 text-gray-600 hover:text-indigo-600 rounded-xl text-xs font-bold transition"
+          >
+            <Edit3 className="w-3.5 h-3.5" /> Chỉnh sửa
+          </Link>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Xóa bỏ
+          </button>
+        </div>
+      </div>
 
       {/* Nội dung chi tiết */}
       <div className="space-y-6">
@@ -82,6 +121,14 @@ export default function TaskDetail() {
           </div>
         </div>
       </div>
+
+      {/* Xác nhận xóa */}
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleDelete}
+        title={task.title}
+      />
     </div>
   );
 }

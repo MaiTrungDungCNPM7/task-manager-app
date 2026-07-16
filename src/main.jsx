@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import About from './pages/About.jsx'
 import TaskDetail from './pages/TaskDetail.jsx'
 import TaskFormPage from './pages/TaskFormPage.jsx'
+import NotFound from './pages/NotFound.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -23,6 +24,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
           <Route path="about" element={<About />} />
           <Route path="task/:id" element={<TaskDetail />} /> {/* Thêm route động :id để đưa người dùng tới trang chi tiết */}
+
+          <Route path="*" element={<NotFound />} /> {/* Nếu đường dẫn không tồn tại thì trả về trang 404 */}
         </Route>
       </Routes>
     </BrowserRouter>

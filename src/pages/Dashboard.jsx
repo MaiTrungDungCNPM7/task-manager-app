@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { taskService } from '../services/taskService';
-import { Plus, Trash2, CheckCircle2, Clock, ListTodo, Search, Filter, Edit3, Eye } from 'lucide-react';
+import { Plus, Trash2, CheckCircle2, Clock, ListTodo, Search, Filter, Eye } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
+import ConfirmModal from '../components/ConfirmModal';
 
 export default function Dashboard() {
   // State init
@@ -11,6 +13,12 @@ export default function Dashboard() {
   // State của hàm tìm và lọc
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'todo', 'in-progress', 'done'
+
+  const { showToast } = useOutletContext(); // Lấy hàm showToast
+
+  // Thêm state để quản lý việc mở modal xóa ngoài dashboard
+  const [modalOpen, setModalOpen] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null); // Lưu trữ task đang được chọn để xóa
 
   const fetchTasks = async () => {
     try {
@@ -42,13 +50,22 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteTask = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa công việc này?')) return;
+  const handleOpenDeleteModal = (task) => {
+    setTaskToDelete(task);
+    setModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!taskToDelete) return;
     try {
-      await taskService.deleteTask(id); // Gọi api delete task theo id, xóa cứng dữ liệu trên database
-      setTasks(tasks.filter(task => task.id !== id)); // Cập nhật lại state local, update UI theo dữ liệu mới (tạo mảng mới để render lại)
+      await taskService.deleteTask(taskToDelete.id); // Gọi api xóa data trên database
+      setTasks(tasks.filter(t => t.id !== taskToDelete.id)); // Chạy lại hàm hiển thị 
+      showToast('Xóa công việc thành công!');
     } catch {
-      alert('Xóa thất bại!');
+      showToast('Xóa công việc thất bại!', 'error');
+    } finally {
+      setModalOpen(false);
+      setTaskToDelete(null);
     }
   };
 
@@ -64,10 +81,10 @@ export default function Dashboard() {
 
       // Điều kiện lọc theo từ khóa tìm kiếm (Search Input)
       const matchesSearch = (task.title?.toLowerCase() || '').includes(searchQuery.toLowerCase()) || 
-                            (task.description?.toLowerCase() || '').includes(searchQuery.toLowerCase()); // dùng nullish coalescing để tránh lỗi nếu null
+                            (task.description?.toLowerCase() || '').includes(searchQuery.toLowerCase()); // dùng hai toán tử ?. và || để tránh lỗi nếu null
       return matchesStatus && matchesSearch; // Đảm bảo nếu vừa search input vừa có filter thì vẫn hiển thị thỏa mãn cả hai
     });
-  }, [tasks, searchQuery, statusFilter]); // Hàm phụ thuộc của useMemo
+  }, [tasks, searchQuery, statusFilter]); // Mảng phụ thuộc của useMemo => Chỉ khi những biến này thay đổi thì useMemo mới cho phép chạy lại hàm bên trong
 
   // Hàm bổ trợ chia nhóm task vào 3 cột từ danh sách đã qua bộ lọc
   const getTasksByColumn = (columnType) => {
@@ -129,24 +146,31 @@ export default function Dashboard() {
           <>
             <Column title="Cần Làm" icon={<ListTodo className="text-blue-500" />} count={getTasksByColumn('todo').length} bgColor="bg-blue-50">
               {getTasksByColumn('todo').map(task => (
-                <TaskCard key={task.id} task={task} onMove={handleMoveTask} onDelete={handleDeleteTask} btnText="Bắt đầu" btnColor="bg-blue-500 hover:bg-blue-600" />
+                <TaskCard key={task.id} task={task} onMove={handleMoveTask} onDelete={() => handleOpenDeleteModal(task)} btnText="Bắt đầu" btnColor="bg-blue-500 hover:bg-blue-600" />
               ))}
             </Column>
 
             <Column title="Đang Làm" icon={<Clock className="text-amber-500" />} count={getTasksByColumn('in-progress').length} bgColor="bg-amber-50">
               {getTasksByColumn('in-progress').map(task => (
-                <TaskCard key={task.id} task={task} onMove={handleMoveTask} onDelete={handleDeleteTask} btnText="Hoàn thành" btnColor="bg-amber-500 hover:bg-amber-600" />
+                <TaskCard key={task.id} task={task} onMove={handleMoveTask} onDelete={() => handleOpenDeleteModal(task)} btnText="Hoàn thành" btnColor="bg-amber-500 hover:bg-amber-600" />
               ))}
             </Column>
 
             <Column title="Hoàn Thành" icon={<CheckCircle2 className="text-emerald-500" />} count={getTasksByColumn('done').length} bgColor="bg-emerald-50">
               {getTasksByColumn('done').map(task => (
-                <TaskCard key={task.id} task={task} onMove={handleMoveTask} onDelete={handleDeleteTask} btnText="Làm lại" btnColor="bg-gray-500 hover:bg-gray-600" />
+                <TaskCard key={task.id} task={task} onMove={handleMoveTask} onDelete={() => handleOpenDeleteModal(task)} btnText="Làm lại" btnColor="bg-gray-500 hover:bg-gray-600" />
               ))}
             </Column>
           </>
         )}
       </div>
+      {/* Modal xác nhận ngoài dashboard */}
+      <ConfirmModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={taskToDelete?.title || ''}
+      />
     </div>
   );
 }
@@ -198,13 +222,6 @@ function TaskCard({ task, onMove, onDelete, btnText, btnColor }) {
       <div className="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
         {/* Nút Sửa (Edit) dẫn trực tiếp sang trang Edit */}
         <div className="flex items-center gap-2">
-          <Link
-            to={`/tasks/${task.id}/edit`} 
-            className="text-gray-500 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition flex items-center gap-1 text-xs font-semibold"
-            title="Chỉnh sửa công việc"
-          >
-            <Edit3 className="w-4 h-4" /> Sửa
-          </Link>
           <Link
             to={`/task/${task.id}`} // Chuyển hướng sang trang xem chi tiết theo id
             className="text-gray-500 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition flex items-center gap-1 text-xs font-semibold"
