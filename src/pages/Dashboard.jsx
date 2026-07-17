@@ -68,29 +68,29 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* THANH CÔNG CỤ TÌM KIẾM & LỌC */}
-      <div className="bg-white p-4 rounded-2xl border shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
         
         <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto flex-1">
           {/* Ô Search */}
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-gray-600 dark:text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Tìm kiếm công việc..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50/50"
+              className="w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-100/50 dark:bg-gray-800/700 text-gray-800 dark:text-gray-100"
             />
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             {/* Lọc theo trạng thái */}
             <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+              <Filter className="w-4 h-4 text-gray-500 dark:text-gray-200" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-600 cursor-pointer"
+                className="border rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-600 dark:text-gray-200 cursor-pointer"
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="todo">Cần Làm</option>
@@ -101,11 +101,11 @@ export default function Dashboard() {
 
             {/* Sắp xếp dữ liệu */}
             <div className="flex items-center gap-2">
-              <ArrowUpDown className="w-4 h-4 text-gray-400" />
+              <ArrowUpDown className="w-4 h-4 text-gray-500 dark:text-gray-200" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-600 cursor-pointer"
+                className="border rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-gray-600 dark:text-gray-200 cursor-pointer"
               >
                 <option value="title-asc">Tên (A-Z)</option>
                 <option value="due-soon">Tới hạn gần nhất</option>
@@ -126,7 +126,7 @@ export default function Dashboard() {
       
       {/* List */}
       {loading ? (
-        <div className="text-center py-20 font-medium text-gray-500">Đang tải dữ liệu từ máy chủ...</div>
+        <div className="text-center py-20 font-medium text-gray-500 dark:text-gray-200">Đang tải dữ liệu từ máy chủ...</div>
       ) : (
         <div className="space-y-4">
           <TaskList 
@@ -139,22 +139,22 @@ export default function Dashboard() {
 
           {/* Pagination UI */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between bg-white px-5 py-4 rounded-2xl shadow-sm border border-gray-100 mt-4">
-              <span className="text-sm font-medium text-gray-600">
-                Trang <b className="text-indigo-600">{currentPage}</b> / {totalPages} <span className="hidden sm:inline">(Tổng {totalItems} tác vụ)</span>
+            <div className="flex items-center justify-between bg-white dark:bg-gray-900 px-5 py-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-400 mt-4">
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-200">
+                Trang <b className="text-indigo-800 dark:text-indigo-200">{currentPage}</b> / {totalPages} <span className="hidden sm:inline">(Tổng {totalItems} tác vụ)</span>
               </span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="p-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition text-gray-600"
+                  className="p-2 border border-gray-200 rounded-xl bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition text-gray-600 dark:text-gray-100"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="p-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition text-gray-600"
+                  className="p-2 border border-gray-200 rounded-xl bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-400 disabled:opacity-40 disabled:cursor-not-allowed transition text-gray-600 dark:text-gray-200"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

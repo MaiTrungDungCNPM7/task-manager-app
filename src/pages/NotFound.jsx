@@ -7,8 +7,8 @@ export default function NotFound({ message }) {
       <div className="bg-red-50 text-red-500 p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
         <AlertCircle className="w-8 h-8" />
       </div>
-      <h1 className="text-3xl font-black text-gray-900 mb-2">404 - Không tìm thấy</h1>
-      <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+      <h1 className="text-3xl font-black text-gray-900 dark:text-gray-200 mb-2">404 - Không tìm thấy</h1>
+      <p className="text-gray-600 dark:text-gray-200 text-sm mb-8 leading-relaxed">
         {message || "Đường dẫn bạn truy cập không tồn tại hoặc dữ liệu công việc đã bị xóa khỏi hệ thống."}
       </p>
       <Link

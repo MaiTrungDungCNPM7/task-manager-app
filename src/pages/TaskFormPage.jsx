@@ -129,19 +129,19 @@ export default function TaskFormPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-2xl border shadow-sm p-6 md:p-8 mt-6">
-      <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 font-medium mb-6 transition">
+    <div className="max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-2xl border shadow-sm p-6 md:p-8 mt-6">
+      <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-200 hover:text-indigo-600 font-medium mb-6 transition">
         <ArrowLeft className="w-4 h-4" /> Quay lại Dashboard
       </Link>
 
-      <h1 className="text-2xl font-black text-gray-900 mb-6">
+      <h1 className="text-2xl font-black text-gray-900 dark:text-gray-200 mb-6">
         {isEditMode ? 'Chỉnh Sửa Công Việc' : 'Tạo Công Việc Mới'}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Tiêu Đề */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Tiêu đề công việc</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-200 mb-2">Tiêu đề công việc</label>
           <input
             type="text"
             value={title}
@@ -150,7 +150,7 @@ export default function TaskFormPage() {
               if (errors.title) setErrors({ ...errors, title: '' });
             }}
             placeholder="Nhập tiêu đề..."
-            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm transition ${
+            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm text-gray-600 dark:text-gray-200 transition ${
               errors.title ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-indigo-500'
             }`}
           />
@@ -165,13 +165,13 @@ export default function TaskFormPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Mức độ ưu tiên */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 md:flex items-center gap-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-200 mb-2 md:flex items-center gap-1">
               <AlertTriangle className="w-3.5 h-3.5" /> Mức độ ưu tiên
             </label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white cursor-pointer"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-gray-900 cursor-pointer"
             >
               <option value="low">Thấp</option>
               <option value="medium">Trung bình</option>
@@ -181,8 +181,8 @@ export default function TaskFormPage() {
 
           {/* Ngày tới hạn */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 md:flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" /> Ngày tới hạn
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-200 mb-2 md:flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 "/> Ngày tới hạn
             </label>
             <input
               type="date"
@@ -206,11 +206,11 @@ export default function TaskFormPage() {
         {/* Lựa chọn trạng thái */}
         {isEditMode && (
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Trạng thái hiện tại</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-200 mb-2">Trạng thái hiện tại</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white cursor-pointer"
+              className="w-full px-4 py-3 border border-gray-200 dark:border-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white dark:bg-gray-900 cursor-pointer"
             >
               <option value="todo">Cần làm</option>
               <option value="in-progress">Đang làm</option>
@@ -221,7 +221,7 @@ export default function TaskFormPage() {
 
         {/* Mô Tả */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Mô tả chi tiết</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-200 mb-2">Mô tả chi tiết</label>
           <textarea
             value={description}
             onChange={(e) => {

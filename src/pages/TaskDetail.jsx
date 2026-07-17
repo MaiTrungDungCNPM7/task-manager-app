@@ -62,10 +62,10 @@ export default function TaskDetail() {
   const currentStatus = statusConfig[task.status] || { label: 'Chưa rõ', color: 'bg-gray-100 text-gray-800' };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-2xl border shadow-sm p-6 md:p-8 mt-6">
+    <div className="max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-2xl border shadow-sm p-6 md:p-8 mt-6">
       {/* Thanh điều hướng quay lại */}
       <div className="flex justify-between items-center mb-6">
-        <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 font-medium transition">
+        <Link to="/tasks" className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-200 hover:text-indigo-600 font-medium transition">
           <ArrowLeft className="w-4 h-4" /> Quay lại Dashboard
         </Link>
         
@@ -73,7 +73,7 @@ export default function TaskDetail() {
         <div className="flex items-center gap-2">
           <Link
             to={`/tasks/${task.id}/edit`}
-            className="flex items-center gap-1.5 px-3.5 py-2 border border-gray-200 hover:border-indigo-500 text-gray-600 hover:text-indigo-600 rounded-xl text-xs font-bold transition"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-gray-700 border border-gray-200 hover:border-indigo-500 text-gray-600 dark:text-gray-200 hover:text-indigo-600 rounded-xl text-xs font-bold transition"
           >
             <Edit3 className="w-3.5 h-3.5" /> Chỉnh sửa
           </Link>
@@ -92,30 +92,30 @@ export default function TaskDetail() {
           <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${currentStatus.color}`}>
             <CheckCircle className="w-3.5 h-3.5" /> {currentStatus.label}
           </span>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 mt-3 wrap-break-word leading-tight">{task.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-gray-200 mt-3 wrap-break-word leading-tight">{task.title}</h1>
         </div>
 
         <hr className="border-gray-100" />
 
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Mô tả chi tiết</h3>
-          <p className="text-gray-600 bg-gray-50 p-4 rounded-xl text-sm leading-relaxed border border-gray-100/50 min-h-25 wrap-break-word whitespace-pre-line">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-200 mb-2">Mô tả chi tiết</h3>
+          <p className="text-gray-600 dark:text-gray-200 bg-gray-50 dark:bg-gray-900 p-4 rounded-xl text-sm leading-relaxed border border-gray-100/50 min-h-25 wrap-break-word whitespace-pre-line">
             {task.description}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 pt-2">
-          <div className="flex items-center gap-2.5 text-gray-500">
+          <div className="flex items-center gap-2.5 text-gray-600 dark:text-gray-200">
             <Calendar className="w-4 h-4 text-indigo-500" />
             <div>
-              <p className="text-[10px] uppercase font-bold text-gray-400">Ngày tạo</p>
+              <p className="text-[10px] uppercase font-bold text-gray-600 dark:text-gray-200">Ngày tạo</p>
               <p className="text-xs font-medium">{task.createdAt ? new Date(task.createdAt).toLocaleDateString('vi-VN') : 'Không rõ'}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2.5 text-gray-500">
+          <div className="flex items-center gap-2.5 text-gray-600 dark:text-gray-200">
             <Tag className="w-4 h-4 text-indigo-500" />
             <div>
-              <p className="text-[10px] uppercase font-bold text-gray-400">Task ID</p>
+              <p className="text-[10px] uppercase font-bold text-gray-600 dark:text-gray-200">Task ID</p>
               <p className="text-xs font-mono font-bold">#{task.id}</p>
             </div>
           </div>
