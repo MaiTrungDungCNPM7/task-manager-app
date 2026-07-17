@@ -21,10 +21,12 @@ Link Github của dự án: https://github.com/MaiTrungDungCNPM7/task-manager-ap
 Đầu tiên, tạo một thư mục mới mà bạn muốn chứa dự án. Sau đó mở cửa sổ cmd/powershell tại thư mục đó bằng cách click vào thanh đường dẫn thư mục.
 Sau đó tại cửa số cmd/powershell lần lượt nhập các lệnh:
 - `git clone https://github.com/MaiTrungDungCNPM7/task-manager-app.git`
-- Sau đó đợi dự án được clone về xong thì mở nó ra trong IDE.
-Ở trong IDE ta làm:
+- Sau đó đợi dự án được clone về xong thì mở nó ra trong IDE để tiếp tục làm việc.
 - Tạo cửa số terminal mới.
 - `git branch` để kiểm tra nhánh (thường dự án sẽ ở nhánh main mặc định)
 - Nhập `git checkout -b ＜tên nhánh bạn muốn đặt＞` để tạo nhánh git mới nơi bạn sẽ làm việc với dự án.
 - Nhập `npm i` hoặc `npm install` để cài đặt các thư viện và module cần thiết.
 - Cuối cùng, nhập `npm run dev` để dự án khởi chạy, sau đó truy cập đường dẫn hiện ra (thường sẽ là `http://localhost:5173/`) là chạy local thành công.
+
+## Live demo link:
+https://drive.google.com/file/d/195R4DQ0WCqdsqdi-FHrIhRoa66nuZm7-/view?usp=sharing
