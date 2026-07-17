@@ -1,40 +1,67 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { taskService } from '../services/taskService';
-import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle, Calendar, AlertTriangle } from 'lucide-react';
 
 export default function TaskFormPage() {
   const { id } = useParams(); // Lấy ID nếu đang ở chế độ Edit
-  const isEditMode = !!id; // Chuyển đổi thành boolean (true nếu có id, ngược lại là false)
+  const isEditMode = !!id; // Chuyển đổi ép kiểu thành boolean (true nếu có id, ngược lại là false)
   const navigate = useNavigate();
 
   // State lưu trữ dữ liệu form
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('todo'); // Mặc định là todo khi tạo mới
+  const [priority, setPriority] = useState('low');
+  const [dueDate, setDueDate] = useState('');
   const [loading, setLoading] = useState(false);
 
   // State quản lý lỗi Validation
-  const [errors, setErrors] = useState({ title: '', description: '' });
+  const [errors, setErrors] = useState({ title: '', description: '', dueDate: '' });
 
   // Nếu ở chế độ Edit, fetch dữ liệu cũ về đổ vào Form
   useEffect(() => {
+    if (!isEditMode) return;
+
+    const controller = new AbortController(); // Tạo tín hiệu hủy
+
     if (isEditMode) {
       const fetchTask = async () => {
         try {
           setLoading(true);
           const response = await taskService.getTaskById(id);
+          const task = response.data;
+
           setTitle(response.data.title);
           setDescription(response.data.description);
           setStatus(response.data.status || 'todo');
-        } catch {
-          alert('Không thể tải thông tin công việc!');
-          navigate('/tasks'); // Khi chỉnh sửa xong và xác nhận sẽ chuyển hướng về lại trang dashboard task chính
+          setPriority(task.priority || 'low');
+
+          // Ép kiểu ngược từ chuỗi số Timestamp về 'YYYY-MM-DD' cho thẻ input
+          if (task.dueDate) {
+            const dateObj = new Date(Number(task.dueDate));
+            if (!isNaN(dateObj.getTime())) {
+               // Chuyển thành định dạng YYYY-MM-DD
+               const yyyy = dateObj.getFullYear();
+               const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+               const dd = String(dateObj.getDate()).padStart(2, '0');
+               setDueDate(`${yyyy}-${mm}-${dd}`);
+            }
+          }
+        } catch (err) {
+          if (err.name !== 'CanceledError') { // Tránh alert nếu chủ động hủy
+            alert('Không thể tải thông tin công việc!');
+            navigate('/tasks'); // Khi chỉnh sửa xong và xác nhận sẽ chuyển hướng về lại trang dashboard task chính
+          } 
         } finally {
           setLoading(false);
         }
       };
       fetchTask();
+      // Hàm dọn rác
+      return () => {
+        controller.abort(); // Hủy request nếu component bị unmount giữa chừng
+      };
     }
   }, [id, isEditMode, navigate]);
 
@@ -51,6 +78,10 @@ export default function TaskFormPage() {
       newErrors.description = 'Mô tả chi tiết không được để trống!';
       isValid = false;
     }
+    if (!dueDate) {
+      newErrors.dueDate = 'Vui lòng chọn ngày tới hạn!';
+      isValid = false;
+    }
 
     setErrors(newErrors);
     return isValid;
@@ -65,10 +96,14 @@ export default function TaskFormPage() {
 
     try {
       setLoading(true);
+
       const taskData = {
         title: title.trim(),
         description: description.trim(),
         status,
+        priority,
+        // Ép kiểu từ 'YYYY-MM-DD' thành chuỗi Timestamp để lưu vào Database
+        dueDate: new Date(dueDate).getTime().toString(),
         createdAt: isEditMode ? undefined : new Date().toISOString(), // Chỉ thêm ngày tạo khi làm mới
       };
 
@@ -112,7 +147,7 @@ export default function TaskFormPage() {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value);
-              if (errors.title) setErrors({ ...errors, title: '' }); // Xóa lỗi khi người dùng bắt đầu gõ lại
+              if (errors.title) setErrors({ ...errors, title: '' });
             }}
             placeholder="Nhập tiêu đề..."
             className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm transition ${
@@ -125,6 +160,64 @@ export default function TaskFormPage() {
             </p>
           )}
         </div>
+
+        {/* Khối chia đôi: Priority & Due Date */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Mức độ ưu tiên */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 md:flex items-center gap-1">
+              <AlertTriangle className="w-3.5 h-3.5" /> Mức độ ưu tiên
+            </label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white cursor-pointer"
+            >
+              <option value="low">Thấp</option>
+              <option value="medium">Trung bình</option>
+              <option value="high">Cao</option>
+            </select>
+          </div>
+
+          {/* Ngày tới hạn */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 md:flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5" /> Ngày tới hạn
+            </label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => {
+                setDueDate(e.target.value);
+                if (errors.dueDate) setErrors({ ...errors, dueDate: '' });
+              }}
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 text-sm transition ${
+                errors.dueDate ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-indigo-500'
+              }`}
+            />
+            {errors.dueDate && (
+              <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" /> {errors.dueDate}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Lựa chọn trạng thái */}
+        {isEditMode && (
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Trạng thái hiện tại</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white cursor-pointer"
+            >
+              <option value="todo">Cần làm</option>
+              <option value="in-progress">Đang làm</option>
+              <option value="done">Hoàn thành</option>
+            </select>
+          </div>
+        )}
 
         {/* Mô Tả */}
         <div>
@@ -147,22 +240,6 @@ export default function TaskFormPage() {
             </p>
           )}
         </div>
-
-        {/* Lựa chọn trạng thái (Chỉ hiện khi ở chế độ Edit) */}
-        {isEditMode && (
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Trạng thái hiện tại</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white cursor-pointer"
-            >
-              <option value="todo">Cần làm</option>
-              <option value="in-progress">Đang làm</option>
-              <option value="done">Hoàn thành</option>
-            </select>
-          </div>
-        )}
 
         <button
           type="submit"

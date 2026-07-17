@@ -8,6 +8,7 @@ export default function App() {
   // State quản lý Toast
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
+  // Khai báo và tạo hàm xử lý toast message
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => {
@@ -41,7 +42,7 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Truyền hàm showToast qua context của Outlet để các trang con đều dùng được */}
+      {/* Truyền hàm showToast qua context của Outlet như một props để các trang con render bên trong outlet đều dùng được */}
       <main className="max-w-7xl mx-auto p-6 mt-4">
         <Outlet context={{ showToast }} />
       </main>
