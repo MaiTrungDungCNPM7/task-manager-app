@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { Layers, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Layers, CheckCircle2, AlertCircle, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 export default function App() {
@@ -7,6 +7,9 @@ export default function App() {
 
   // State quản lý Toast
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  // State quản lý việc đóng/mở Mobile Menu (Responsive)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Khai báo và tạo hàm xử lý toast message
   const showToast = (message, type = 'success') => {
@@ -31,7 +34,8 @@ export default function App() {
             <span className="text-xl font-black tracking-tight text-gray-900">Task<span className="text-indigo-600">Flow</span></span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Desktop Navigation: Thêm `hidden md:flex` để ẩn trên mobile, chỉ hiện từ màn hình md trở lên */}
+          <div className="hidden md:flex items-center gap-2">
             <Link to="/tasks" className={`px-4 py-2 rounded-xl text-sm font-medium transition ${isActive('/tasks')}`}>
               Dashboard
             </Link>
@@ -39,7 +43,39 @@ export default function App() {
               Giới thiệu
             </Link>
           </div>
+
+          {/* Menu button: Chỉ hiển thị trên mobile (`flex md:hidden`) */}
+          <div className="flex md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)} // Mỗi khi click vào thì đổi trạng thái isMenuOpen ngược lại
+              type="button"
+              className="p-2 rounded-xl text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition focus:outline-none"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />} {/* Dấu X khi đang mở, icon Menu khi đang đóng */}
+            </button>
+          </div>
+
         </div>
+
+        {/* Mobile Dropdown Menu: Chỉ xuất hiện dưới thanh navbar khi isMenuOpen = true */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 space-y-1.5 shadow-inner animate-fade-in">
+            <Link 
+              to="/tasks" 
+              onClick={() => setIsMenuOpen(false)} // Tự động đóng menu sau khi click chuyển trang
+              className={`block px-4 py-3 rounded-xl text-sm font-medium transition ${isActive('/tasks')}`}
+            >
+              Dashboard
+            </Link>
+            <Link 
+              to="/about" 
+              onClick={() => setIsMenuOpen(false)} // Tự động đóng menu sau khi click chuyển trang
+              className={`block px-4 py-3 rounded-xl text-sm font-medium transition ${isActive('/about')}`}
+            >
+              Giới thiệu
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Truyền hàm showToast qua context của Outlet như một props để các trang con render bên trong outlet đều dùng được */}
