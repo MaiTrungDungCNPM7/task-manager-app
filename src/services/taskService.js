@@ -10,6 +10,7 @@ const api = axios.create({
   },
 });
 
+// CRUD actions dựa trên các phương thức http request
 export const taskService = {
   // Lấy toàn bộ danh sách công việc
   getAllTasks: () => api.get('/tasks'),
