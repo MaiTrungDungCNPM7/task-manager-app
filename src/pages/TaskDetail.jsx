@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { taskService } from '../services/taskService';
 import { ArrowLeft, Calendar, Tag, CheckCircle, Edit3, Trash2 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import NotFound from './NotFound';
+import { useApp } from '../context/AppContext';
 
 export default function TaskDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  // Lấy hàm showToast từ App component qua Outlet Context
-  const { showToast } = useOutletContext();
+  // Lấy hàm showToast từ AppContext
+  const { showToast } = useApp();
 
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);

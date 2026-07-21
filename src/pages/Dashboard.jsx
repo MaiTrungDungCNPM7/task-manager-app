@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
 import { taskService } from '../services/taskService';
 import { Plus, Search, Filter, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
-import { useOutletContext, Link } from 'react-router-dom';
 import ConfirmModal from '../components/ConfirmModal';
 import TaskList from '../components/TaskList';
 import { useTaskFilters } from '../hooks/useTaskFilters';
+import { Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 
 export default function Dashboard() {
   // 1. Quản lý dữ liệu gốc từ API
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { showToast } = useOutletContext();
 
   // 2. Quản lý Modal Xóa
   const [modalOpen, setModalOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
+
+  // Import thẳng logic toast từ AppContext
+  const { showToast } = useApp();
 
   // 3. Lấy dữ liệu từ mockAPI
   const fetchTasks = async () => {

@@ -11,6 +11,7 @@ export function useTaskFilters(initialTasks = []) {
     return localStorage.getItem('statusFilter') || 'all';
   });
   
+  // Đoạn này lưu local storage để giữ nguyên trạng thái sort kể cả tải lại trang
   const [sortBy, setSortBy] = useState(() => {
     return localStorage.getItem('sortBy') || 'title-asc';
   });
