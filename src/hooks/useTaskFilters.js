@@ -1,40 +1,88 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useDebounce } from './useDebounce';
 
 const PRIORITY_MAP = { high: 3, medium: 2, low: 1 };
 const ITEMS_PER_PAGE = 6;
 
 // Export thường để đảm bảo code toàn vẹn
 export function useTaskFilters(initialTasks = []) {
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const [statusFilter, setStatusFilter] = useState(() => {
-    return localStorage.getItem('statusFilter') || 'all';
-  });
-  
-  // Đoạn này lưu local storage để giữ nguyên trạng thái sort kể cả tải lại trang
-  const [sortBy, setSortBy] = useState(() => {
-    return localStorage.getItem('sortBy') || 'title-asc';
-  });
-  
-  const [currentPage, setCurrentPage] = useState(1);
+  // Sử dụng useSearchParams để quản lý URL Query String
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Sync với LocalStorage
+  // Khởi tạo State từ URL (nếu có)
+  const initialSearch = searchParams.get('search') || '';
+  const statusFilter = searchParams.get('status') || 'all';
+  const sortBy = searchParams.get('sort') || 'title-asc';
+  
+  // State lưu từ khóa tức thì trong ô input (để gõ mượt mà)
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
+
+  // Tạo Debounced value: Chỉ cập nhật sau khi dừng gõ 400ms
+  const debouncedSearch = useDebounce(searchTerm, 400);
+
+  const currentPage = Number(searchParams.get('page')) || 1;
+
+  // Đồng bộ State lên URL params khi debouncedSearch hoặc status, sort thay đổi
   useEffect(() => {
-    localStorage.setItem('statusFilter', statusFilter);
-    localStorage.setItem('sortBy', sortBy);
-  }, [statusFilter, sortBy]);
+    const params = new URLSearchParams(searchParams);
 
-  // Reset trang khi đổi bộ lọc
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCurrentPage(1);
-  }, [searchTerm, statusFilter, sortBy]);
+    // Cập nhật search
+    if (debouncedSearch.trim()) {
+      params.set('search', debouncedSearch.trim());
+    } else {
+      params.delete('search');
+    }
 
-  // Thuật toán Filter & Sort
+    // Cập nhật status
+    if (statusFilter !== 'all') {
+      params.set('status', statusFilter);
+    } else {
+      params.delete('status');
+    }
+
+    // Cập nhật sort
+    if (sortBy !== 'title-asc') {
+      params.set('sort', sortBy);
+    } else {
+      params.delete('sort');
+    }
+
+    setSearchParams(params, { replace: true });
+  }, [debouncedSearch, statusFilter, sortBy, searchParams, setSearchParams]);
+
+  // Reset về trang 1 khi các bộ lọc thay đổi
+  const setCurrentPage = (page) => {
+    const params = new URLSearchParams(searchParams);
+    if (typeof page === 'function') {
+      page = page(currentPage);
+    }
+    params.set('page', page.toString());
+    setSearchParams(params, { replace: true });
+  };
+
+  const setStatusFilter = (status) => {
+    const params = new URLSearchParams(searchParams);
+    if (status !== 'all') params.set('status', status);
+    else params.delete('status');
+    params.set('page', '1'); // Reset về trang 1
+    setSearchParams(params, { replace: true });
+  };
+
+  const setSortBy = (sort) => {
+    const params = new URLSearchParams(searchParams);
+    if (sort !== 'title-asc') params.set('sort', sort);
+    else params.delete('sort');
+    params.set('page', '1'); // Reset về trang 1
+    setSearchParams(params, { replace: true });
+  };
+
+  // Thuật toán Filter & Sort dùng useMemo tối ưu hiệu năng
+  // Chỉ tính toán lại khi initialTasks, debouncedSearch, statusFilter hoặc sortBy thay đổi
   const processedTasks = useMemo(() => {
-    let result = initialTasks.filter(task => {
+    let result = initialTasks.filter((task) => {
       const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = task.title.toLowerCase().includes(debouncedSearch.toLowerCase());
       return matchesStatus && matchesSearch;
     });
 
@@ -46,7 +94,7 @@ export function useTaskFilters(initialTasks = []) {
       }
       return 0;
     });
-  }, [initialTasks, searchTerm, statusFilter, sortBy]);
+  }, [initialTasks, statusFilter, debouncedSearch, sortBy]); // Mảng phụ thuộc của useMemo với các state cần check mỗi lần re-render
 
   // Cắt mảng phân trang
   const totalPages = Math.ceil(processedTasks.length / ITEMS_PER_PAGE);
@@ -58,7 +106,7 @@ export function useTaskFilters(initialTasks = []) {
   // Hàm tiện ích hỗ trợ UI
   const clearFilters = () => {
     setSearchTerm('');
-    setStatusFilter('all');
+    setSearchParams({}, { replace: true });
   };
 
   // Trả về một Object chứa tất cả "nút bấm" để Dashboard điều khiển

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { authService } from '../services/authService';
 import { Layers, Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
@@ -10,12 +10,19 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login, showToast } = useApp();
+  const { user, login, showToast } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Lấy đường dẫn trang bị chặn trước đó (nếu có), mặc định về /tasks
-  const from = location.state?.from?.pathname || '/tasks';
+  // Logic tránh xảy ra vòng lặp
+  // Nếu from không có hoặc from chính là '/login' -> Ép về '/tasks'
+  const rawFrom = location.state?.from?.pathname;
+  const from = (rawFrom && rawFrom !== '/login') ? rawFrom : '/tasks';
+
+  // Nếu đã đăng nhập (user tồn tại): Tự động thoát khỏi trang Login, đẩy về Dashboard
+  if (user) {
+    return <Navigate to={from} replace />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

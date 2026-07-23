@@ -1,10 +1,8 @@
 import { createContext, useContext, useState, useEffect, useReducer } from 'react';
 import { authService } from '../services/authService';
 
-// Khởi tạo Context
 const AppContext = createContext(null);
 
-// useReducer của Authentication
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
@@ -17,19 +15,29 @@ const authReducer = (state, action) => {
   }
 };
 
-// Provider Component
-export function AppProvider({ children }) {
-  // Toast State & Logic
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+// Thêm hàm khởi tạo đồng bộ 
+const getInitialUser = () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    const user = authService.getUser(token);
+    // Nếu token có tồn tại và còn hạn, trả về user ngay lập tức
+    if (user && user.exp > Date.now()) {
+      return user;
+    }
+    // Nếu hết hạn thì dọn dẹp rác
+    localStorage.removeItem('token');
+  }
+  return null;
+};
 
+// Logic của Toast và theme
+export function AppProvider({ children }) {
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast({ show: false, message: '', type });
-    }, 3000);
+    setTimeout(() => setToast({ show: false, message: '', type }), 3000);
   };
 
-  // Dark Mode State & Logic 
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('theme');
@@ -50,34 +58,18 @@ export function AppProvider({ children }) {
     }
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
+  const toggleTheme = () => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
 
-  // Authentication State
-  const [authState, dispatch] = useReducer(authReducer, { user: null });
+  // Gọi hàm getInitialUser() để cấp giá trị mặc định chuẩn xác 
+  const [authState, dispatch] = useReducer(authReducer, { user: getInitialUser() });
 
-  // Tự động kiểm tra Token khi load app, chạy một lần duy nhất khi khởi tạo
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const user = authService.getUser(token);
-      if (user && user.exp > Date.now()) {
-        dispatch({ type: 'SET_USER', payload: user });
-      } else {
-        localStorage.removeItem('token');
-      }
-    }
-  }, []);
-
-  // Hàm xử lý logic cho login và logout
   const login = (userData, token) => {
-    localStorage.setItem('token', token); // Lưu thông tin đăng nhập, token vào local storage
+    localStorage.setItem('token', token); 
     dispatch({ type: 'LOGIN', payload: userData });
   };
 
   const logout = () => {
-    localStorage.removeItem('token'); // Xóa ra khỏi local storage khi logout
+    localStorage.removeItem('token'); 
     dispatch({ type: 'LOGOUT' });
     showToast('Đã đăng xuất thành công!');
   };
@@ -99,12 +91,9 @@ export function AppProvider({ children }) {
   );
 }
 
-// Custom Hook giúp truy cập nhanh từ bất kỳ đâu
 // eslint-disable-next-line react-refresh/only-export-components
 export const useApp = () => {
   const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp phải được sử dụng bên trong AppProvider');
-  }
+  if (!context) throw new Error('useApp phải được sử dụng bên trong AppProvider');
   return context;
 };
